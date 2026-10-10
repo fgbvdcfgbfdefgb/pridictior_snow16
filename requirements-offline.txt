@@ -1,0 +1,6 @@
+# Packages to bundle as wheels on a machine WITH internet, then upload to the Snowflake stage.
+# See README -> "Snowflake offline setup" (scripts/make_offline_wheels.sh).
+numpy>=1.26
+pandas>=2.1
+pyarrow>=15.0
+torch>=2.3

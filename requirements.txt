@@ -1,0 +1,8 @@
+# Online install (local GPU box / molab / laptop). Torch: pick the build for your CUDA from pytorch.org.
+numpy>=1.26
+pandas>=2.1
+pyarrow>=15.0
+torch>=2.3
+marimo>=0.14.0
+anywidget>=0.9.0
+traitlets>=5.9

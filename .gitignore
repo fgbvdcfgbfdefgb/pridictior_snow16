@@ -1,0 +1,12 @@
+# generated data (rebuild with scripts/prepare_dataset.py) and training outputs
+data/processed/
+data/raw/
+data/tmp/
+models/**/*.pt
+!models/best/*.pt
+offline_wheels/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+*.tmp
