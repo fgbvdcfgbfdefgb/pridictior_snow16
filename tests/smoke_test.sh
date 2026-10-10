@@ -3,7 +3,10 @@
 # It checks that every stage runs and that the live engine reproduces the offline pipeline.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-T=$(mktemp -d)
+# use disk, not /tmp (often RAM-backed tmpfs)
+T=${SMOKE_DIR:-data/tmp/smoke}
+rm -rf "$T" && mkdir -p "$T"
+T=$(cd "$T" && pwd)
 echo "work dir: $T"
 python scripts/prepare_dataset.py --start 2020-01 --end 2020-01 --out "$T/proc" \
   --train-end 2020-01-20T00:00:00 --test-start 2020-01-25T00:00:00

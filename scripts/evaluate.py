@@ -35,7 +35,7 @@ def load_model(ckpt_path: Path, device: str):
 
 @torch.no_grad()
 def predict(model, ds: ProcessedSeries, anchors: np.ndarray, lookback: int, device: str,
-            batch: int = 64) -> np.ndarray:
+            batch: int = 16) -> np.ndarray:
     out = []
     for i in range(0, len(anchors), batch):
         x = torch.from_numpy(ds.windows(anchors[i:i + batch], lookback)).to(device)
@@ -53,6 +53,7 @@ def main() -> int:
     ap.add_argument("--stab-seconds", type=int, default=1800, help="consecutive seconds for stability test")
     ap.add_argument("--ema-alpha", type=float, default=0.3)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--batch", type=int, default=16, help="lower it if you run out of memory")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
@@ -66,7 +67,7 @@ def main() -> int:
 
     # ---- accuracy at the 25-min horizon, every `stride` seconds ----
     anchors = np.arange(lo, hi, args.stride, dtype=np.int64)
-    knots = predict(model, ds, anchors, lookback, args.device)
+    knots = predict(model, ds, anchors, lookback, args.device, args.batch)
     actual_knots = ds.targets(anchors)                     # % log-return realised at each knot
     c0 = ds.close[anchors]
     pred_end = c0 * np.exp(knots[:, -1] / 100)
@@ -83,7 +84,7 @@ def main() -> int:
     # ---- stability: consecutive seconds forecast the same future seconds ----
     s0 = lo + (hi - lo) // 3
     block = np.arange(s0, min(hi, s0 + args.stab_seconds), dtype=np.int64)
-    bk = predict(model, ds, block, lookback, args.device)
+    bk = predict(model, ds, block, lookback, args.device, args.batch)
     paths = knots_to_path(bk)                                                  # (n, HORIZON) % log-ret
     P = ds.close[block][:, None] * np.exp(paths / 100)                         # absolute price paths
     raw_jit = np.abs(P[1:, 1:] - P[:-1, :-1]) / P[:-1, :-1]                    # same absolute second
