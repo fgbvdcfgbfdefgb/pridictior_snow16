@@ -32,7 +32,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from btcpred.config import ARCHITECTURES, LOOKBACK, MODELS_DIR, PATCH, PRESETS  # noqa: E402
+from btcpred.config import ARCHITECTURES, HORIZON, LOOKBACK, MODELS_DIR, PATCH, PRESETS  # noqa: E402
 from btcpred.dataset import ProcessedSeries  # noqa: E402
 from btcpred.hardware import choose_preset, detect  # noqa: E402
 from btcpred.models import PricePredictor, predictor_loss  # noqa: E402
@@ -88,7 +88,9 @@ def main() -> int:
 
     # anchors: one pass over the training range, in time order, split across ranks
     rng = np.random.default_rng(args.seed)
-    lo, hi = ds.anchor_range(0, ds.meta["train_end_idx"], args.lookback)
+    # targets look 25 min ahead, so the last training anchor must be >= HORIZON s before train_end
+    # (otherwise test-period prices would leak into training targets)
+    lo, hi = ds.anchor_range(0, ds.meta["train_end_idx"] - HORIZON - 1, args.lookback)
     anchors = np.arange(lo + int(rng.integers(0, args.stride)), hi, args.stride, dtype=np.int64)
     if args.max_anchors:
         anchors = anchors[: args.max_anchors]

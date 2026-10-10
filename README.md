@@ -171,8 +171,9 @@ The driver sets `HF_HUB_OFFLINE`, `WANDB_MODE=disabled` and similar switches, an
 | columns | `ts` (unix s), `open`, `high`, `low`, `close`, `volume`, `taker_buy_volume`, `trades` |
 | processed | `data/processed/` (not committed): 12 causal features, 19 analyser columns, per-second |
 
-GitHub limits: 100 MB per file (monthly files are ~40 MB), and the repo is recommended to stay
-under 1 GB. The full dataset is about 3.2 GB, so the push is split into batches (`scripts/push_data_chunks.sh`).
+GitHub limits: a hard 100 MB cap per file, a warning above 50 MB, and a recommended repo size under 1 GB.
+Monthly files are 40-63 MB, so they pass the hard cap but some trigger the 50 MB warning (harmless).
+The full dataset is about 3.3 GB, so the push is split into batches (`scripts/push_data_chunks.sh`).
 
 ## 7. Tests
 
